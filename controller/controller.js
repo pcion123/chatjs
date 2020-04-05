@@ -1,4 +1,5 @@
 import logger from "../util/logger.js";
+import socketio from "../socket/socketio.js";
 
 const controller = {
 	onConnect : function(socket, host) {
@@ -26,7 +27,9 @@ const controller = {
 		}
 	},
 	onTest : function(maintext) {
-		maintext.value = maintext.value + '\n' + "onTest";
+		// maintext.value = maintext.value + '\n' + "onTest";
+		var header = socketio.genHeader(1,1);
+		logger.info(header);
 	}
 };
 export default controller;

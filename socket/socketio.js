@@ -4,6 +4,7 @@ const socketio = {
 	socket : null,
 	host : "ws://localhost:8080/",
 	connected : false,
+	serialId : 0,
 
 	connect : function(host) {
 		if (!window.WebSocket) {
@@ -31,6 +32,37 @@ const socketio = {
 	update : function() {
 		logger.info("socket is update");
 	},
+
+	send : function(mainNo, subNo, message) {
+
+	},
+
+	// genSerialId : function() {
+	// 	return this.genSerialId0(this.serialId);
+	// },
+
+	// genSerialId0 : function(id) {
+	// 	this.serialId = id + 1;
+	// 	return this.serialId;
+	// },
+
+	// genHeader : function(mainNo, subNo) {
+	// 	var id = this.genSerialId();
+	// 	return genHeader0(mainNo, subNo, id);
+	// },
+
+	// genHeader0 : function(mainNo, subNo, serialId) {
+	// 	var header = new Object();
+	// 	// header.isCompress = false;
+	// 	// header.len = 20;
+	// 	header.mainNo = mainNo;
+	// 	header.subNo = subNo;
+	// 	header.serialId = serialId;
+	// 	header.sessionId = user.sessionId;
+	// 	header.token = user.token;
+	// 	header.uid = user.uid;
+	// 	return header;
+	// },
 
 	onReceive : function(event) {
 		logger.info("socket is reccive data -> " + event.data);
