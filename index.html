@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>WebSocket Chat</title>
+</head>
+<body>
+	<script src="./main.js" type="module"></script>
+	<form onsubmit="return false;">
+		<h3>WebSocket聊天室</h3>
+		<textarea id="maintext" style="width: 500px; height: 300px;"></textarea>
+		<br> 
+		<input id="addressinput" type="text" style="width: 300px" value="ws://localhost:8080/">
+		<input id="connectbtn" type="button" value="connect">
+		<input id="disconnectbtn" type="button" value="disconnect">
+		<br> 
+		<input id="accountinput" type="text" style="width: 146px" value="account">
+		<input id="passwordinput" type="text" style="width: 146px" value="password">
+		<input id="loginbtn" type="button" value="login">
+		<input id="logoutbtn" type="button" value="logout">
+		<br>
+		<input id="messageinput" type="text" style="width: 300px" value="write some thing...">
+		<input id="sendmessagebtn" type="button" value="send">
+		<input id="clearbtn" type="button" value="clear">
+		<input id="testbtn" type="button" value="test">
+	</form>
+</body>
+</html>
