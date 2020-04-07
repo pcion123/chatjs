@@ -1,8 +1,17 @@
 import logger from "../util/logger.js";
 import string from "../util/string.js";
 import json from "../util/json.js";
+import time from "../util/time.js";
+
+import config from "../config.js";
+
 import protocolId from "../constant/protocolid.js";
+
 import protocol from "./protocol.js";
+
+import asyncholder from "../base/task/asyncholder.js";
+import task from "../base/task/task.js";
+import schedule from "../base/task/schedule.js";
 
 const socketio = {
 	socket : null,
@@ -10,12 +19,18 @@ const socketio = {
 	connected : false,
 	serialId : 0,
 
-	getConnected : function() {
-		return this.connected;
+	processes : Array.from(Array(256), () => new Array(256)),
+
+	pingSchedule : null,
+	pingTime : time.now(),
+
+	init : function() {
+		this.bind(protocolId.SYSTEM.code, 0, protocol.rcv_000_000);
+		this.bind(protocolId.ACCOUNT.code, 1, protocol.rcv_001_001);
 	},
 
-	setConnected : function(value) {
-		this.connected = value;
+	bind : function(mainNo, subNo, event) {
+		this.processes[mainNo][subNo] = event;
 	},
 
 	connect : function(host) {
@@ -45,7 +60,7 @@ const socketio = {
 	},
 
 	update : function() {
-		logger.info("socket is update");
+
 	},
 
 	dispatcher : function(pack) {
@@ -61,22 +76,22 @@ const socketio = {
 			logger.warn("rcv pack buffer is undefined");
 			return;
 		}
-		var mainNo = pack.header.mainNo;
-		var subNo = pack.header.subNo;
-		var message = pack.buffer;
-		if (protocol.processes[mainNo][subNo] != null) {
-			protocol.processes[mainNo][subNo]();
-			logger.info(string.format("process {0}_{1} is registed -> {2}", mainNo, subNo, message));
+		let mainNo = pack.header.mainNo;
+		let subNo = pack.header.subNo;
+		let message = pack.buffer;
+		if (this.processes[mainNo][subNo] != null) {
+			this.processes[mainNo][subNo](message);
 		} else {
-			logger.info(string.format("process {0}_{1} is not registed", mainNo, subNo));
+			logger.warn(string.format("process {0}_{1} is not registed", mainNo, subNo));
 		}
 	},
 
 	send : function(mainNo, subNo, message) {
 		if (this.connected) {
-			var pack = this.formater(mainNo, subNo, message);
-			var str = json.objToStr(pack);
+			let pack = this.formater(mainNo, subNo, message);
+			let str = json.objToStr(pack);
 			this.socket.send(str);
+			logger.debug("socket is send pack -> " + str);
 		} else {
 			logger.warn(string.format("{0} is not connected", this.host));
 		}
@@ -87,7 +102,7 @@ const socketio = {
 	},
 
 	formater0 : function(mainNo, subNo, buffer, serialId) {
-		var pack = new Object();
+		let pack = new Object();
 		if (serialId == 0) {
 			pack.header = this.genHeader(mainNo, subNo);
 		} else {
@@ -107,12 +122,12 @@ const socketio = {
 	},
 
 	genHeader : function(mainNo, subNo) {
-		var id = this.genSerialId();
+		let id = this.genSerialId();
 		return this.genHeader0(mainNo, subNo, id);
 	},
 
 	genHeader0 : function(mainNo, subNo, serialId) {
-		var header = new Object();
+		let header = new Object();
 		// header.isCompress = false;
 		// header.len = 20;
 		header.mainNo = mainNo;
@@ -124,19 +139,33 @@ const socketio = {
 		return header;
 	},
 
+	ping : function(socket) {
+		socket.pingTime = time.now();
+		
+		socket.send(0, 0, null);
+	},
+
 	onReceive : function(event) {
-		logger.info("socket is reccive data -> " + event.data);
-		var message = json.strToObj(event.data);
-		this.parent.dispatcher(message);
+		logger.debug("socket is receive pack -> " + event.data);
+
+		let pack = json.strToObj(event.data);
+		this.parent.dispatcher(pack);
 	},
 
 	onConnect : function(event) {
 		this.parent.connected = true;
+		this.parent.pingSchedule = asyncholder.runSchedule(this.parent, [], this.parent.ping, 1000);
+
 		logger.info(string.format("{0} is connected", this.parent.host));
 	},
 
 	onDisconnect : function(event) {
 		this.parent.connected = false;
+		if (this.parent != null) {
+			this.parent.pingSchedule.shutdown();
+			this.parent.pingSchedule = null;
+		}
+
 		logger.info(string.format("{0} is disconnected", this.parent.host));
 	}
 };

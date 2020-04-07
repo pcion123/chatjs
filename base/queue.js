@@ -1,7 +1,7 @@
 import logger from "../util/logger.js";
 import string from "../util/string.js";
 
-function list() {
+function queue() {
 	this.container = new Array(10);
 	this.scale = 10;
 	this.index = -1;
@@ -10,7 +10,19 @@ function list() {
 		return this.index + 1;
 	};
 
-	this.add = function(obj) {
+	this.head = function() {
+		if (0 <= this.index) {
+			return this.container[0];
+		}
+	};
+
+	this.tail = function() {
+		if (0 <= this.index) {
+			return this.container[this.index];
+		}
+	};
+
+	this.push = function(obj) {
 		while ((this.index + 1) >= this.scale) {
 			this.grow();
 		}
@@ -18,28 +30,15 @@ function list() {
 		this.container[this.index] = obj;
 	};
 
-	this.remove = function(index) {
-		if (index < 0) {
-			logger.warn("array size is zero");
-			return;
-		}
-		if (index > this.index) {
+	this.pop = function() {
+		if (0 > this.index) {
 			logger.warn("array is out of range");
 			return;
 		}
-		let obj = this.container.splice(index, 1);
+		let obj = this.container.splice(0, 1);
 		this.scale = this.scale - 1;
 		this.index = this.index - 1;
 		return obj;
-	};
-
-	this.remove0 = function(obj) {
-		for (let i = 0; i < this.container.length; i++) {
-			let element = this.container[i];
-			if (element === obj) {
-				return this.remove(i);
-			}
-		}
 	};
 
 	this.removeAll = function() {
@@ -60,4 +59,4 @@ function list() {
 		logger.debug("array new size = " + newSize);
 	};
 }
-export default list;
+export default queue;

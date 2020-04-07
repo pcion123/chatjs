@@ -2,12 +2,12 @@ import logger from "./logger.js";
 
 const string = {
 	format : function() {
-	    var s = arguments[0];
+	    let s = arguments[0];
 	    if (s == null) {
 	    	return "";
 	    } else {
-	    	for (var i = 0; i < arguments.length - 1; i++) {
-	    		var reg = this.getStringFormatPlaceHolderRegEx(i);
+	    	for (let i = 0; i < arguments.length - 1; i++) {
+	    		let reg = this.getStringFormatPlaceHolderRegEx(i);
 	    		s = s.replace(reg, (arguments[i + 1] == null ? "" : arguments[i + 1]));
 	    	}
 	    	return this.cleanStringFormatResult(s);
